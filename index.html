@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بيانات الطالب - نظام التسجيل</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root {
+  --primary: #003366; --accent: #2ecc71; --bg: #f0f2f5;
+}
+body {
+  margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg);
+  display: flex; justify-content: center; align-items: center; min-height: 100vh;
+  padding: 20px;
+}
+.card-container {
+  width: 100%; max-width: 400px; background: #fff; border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; animation: fadeIn 0.6s ease;
+}
+.card-header {
+  background: var(--primary); color: white; padding: 25px; text-align: center;
+}
+.card-body { padding: 30px; }
+
+.info-item {
+  display: flex; justify-content: space-between; padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.info-label { color: #888; font-size: 14px; }
+.info-value { color: #333; font-weight: bold; }
+
+.student-id-box {
+  background: #f8fafc; border: 2px dashed var(--accent);
+  border-radius: 12px; margin-top: 20px; padding: 15px; text-align: center;
+}
+.id-number {
+  display: block; font-size: 24px; color: var(--primary); font-weight: 700; margin: 5px 0;
+}
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; }
+button {
+  padding: 12px; border: none; border-radius: 10px; cursor: pointer;
+  font-family: 'Tajawal'; font-weight: bold; transition: 0.3s;
+}
+.btn-download { background: var(--accent); color: white; }
+.btn-copy { background: #eee; color: var(--primary); }
+.btn-new {
+  grid-column: span 2; background: transparent; color: #888;
+  font-size: 13px; text-decoration: underline;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="card-container" id="profileCard">
+  <div id="captureArea">
+    <div class="card-header">
+      <h2 style="margin:0">بطاقة الطالب الذكية</h2>
+      <p style="margin:5px 0 0; opacity:0.8; font-size:13px;">نظام إدارة الطلاب الموحد</p>
+    </div>
+
+    <div class="card-body">
+      <div class="info-item">
+        <span class="info-label">اسم الطالب:</span>
+        <span class="info-value" id="dispNameAr">---</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Name (EN):</span>
+        <span class="info-value" id="dispNameEn">---</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">البلد:</span>
+        <span class="info-value" id="dispCountry">---</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">رقم الهاتف:</span>
+        <span class="info-value" id="dispPhone">---</span>
+      </div>
+
+      <div class="student-id-box">
+        <span class="info-label">رقم التسجيل الخاص بك</span>
+        <span class="id-number" id="dispId">000000</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body" style="padding-top:0">
+    <div class="actions">
+      <button class="btn-copy" onclick="copyId()">📋 نسخ المعرف</button>
+      <button class="btn-download" onclick="downloadCard()">📸 حفظ كصورة</button>
+      
+    </div>
+  </div>
+</div>
+
+<script>
+// 1. الفحص الفوري عند تحميل الصفحة
+window.onload = function() {
+  const studentId = localStorage.getItem("studentId");
+  
+  if (!studentId) {
+    // إذا لم يجد بيانات، يتوجه فوراً لصفحة التسجيل
+    window.location.href = "l.html";
+  } else {
+    // إذا وجد بيانات، يقوم بتعبئتها في البطاقة
+    document.getElementById("dispNameAr").innerText = localStorage.getItem("studentName") || "غير مسجل";
+    document.getElementById("dispNameEn").innerText = localStorage.getItem("studentNameEn") || "Not Provided";
+    document.getElementById("dispCountry").innerText = localStorage.getItem("studentCountry") || "---";
+    document.getElementById("dispPhone").innerText = localStorage.getItem("studentPhone") || "---";
+    document.getElementById("dispId").innerText = studentId;
+  }
+};
+
+// 2. وظيفة نسخ المعرف
+function copyId() {
+  const id = document.getElementById("dispId").innerText;
+  navigator.clipboard.writeText(id).then(() => {
+    alert("تم نسخ معرف الطالب بنجاح: " + id);
+  });
+}
+
+// 3. وظيفة تسجيل طالب آخر
+function registerAnother() {
+  if(confirm("سيتم الخروج من البطاقة الحالية لتسجيل طالب جديد. هل أنت متأكد؟")) {
+    localStorage.removeItem("studentId"); // نحذف المعرف لفتح النموذج من جديد
+    window.location.href = "l.html";
+  }
+}
+
+// 4. وظيفة حفظ البطاقة كصورة
+function downloadCard() {
+  const area = document.getElementById("captureArea");
+  html2canvas(area, { backgroundColor: "#f0f2f5" }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `Student_Card_${localStorage.getItem("studentId")}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+</script>
+
+</body>
+</html>
+
