@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة مؤسسة كن أنت | V6.5</title>
+     <meta property="og:title" content="مؤسسة كن أنت للتدريب والتأهيل" />
+    <meta property="og:description" content="نصنع قادة الغد من خلال المعرفة. استثمر في نفسك، واستثمر في مستقبلك." />
+    <meta property="og:image" content="https://skillia.netlify.app/images/photo.jpg" />
+    <meta property="og:url" content="https://sklilia.netlify.app/Trainees_Records" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ar_AR" />
+    
+    
+  <meta name="description" content="مؤسسة كن أنت للتدريب والتأهيل. نقدم دورات متخصصة في تطوير الذات، الأمن السيبراني، إدارة الأعمال، والمزيد.">
+  <meta name="keywords" content="دورات تدريبية، مؤسسة كن أنت، تطوير الذات، اليمن، صنعاء، دورات أونلاين، حفظ القرآن">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { 
+            --primary: #003366; --primary-hover: #004a94;
+            --accent: #2ecc71; --bg: #f4f7f6; --error: #e74c3c;
+        }
+        
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 80px; }
+
+        /* Sidebar Desktop */
+        .sidebar { background: var(--primary); min-height: 100vh; color: white; position: fixed; width: inherit; z-index: 1000; }
+        .nav-link { color: rgba(255,255,255,0.7); cursor: pointer; padding: 15px 20px; transition: 0.3s; border-radius: 12px; margin: 5px 15px; }
+        .nav-link.active { background: var(--accent) !important; color: white !important; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
+
+        /* Bottom Nav Mobile */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); z-index: 2000; }
+        .nav-item-mobile { display: flex; flex-direction: column; align-items: center; color: #888; text-decoration: none; font-size: 11px; cursor: pointer; }
+        .nav-item-mobile.active { color: var(--primary); font-weight: bold; }
+        .nav-item-mobile i { font-size: 22px; }
+
+        .main-content { padding: 25px; }
+        @media (min-width: 768px) { .main-content { margin-right: 16.666667%; } .bottom-nav { display: none; } }
+        @media (max-width: 767px) { .sidebar { display: none !important; } }
+
+        /* Cards & UI */
+        .card-custom { background: white; border-radius: 20px; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 25px; }
+        .hidden { display: none !important; }
+        
+        /* Question Cards */
+        .q-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
+        .q-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .opt { padding: 10px 15px; background: #f8f9fc; border-radius: 12px; margin-bottom: 8px; font-size: 14px; border: 1px solid transparent; }
+        .opt.correct { background: #e8fdf5; border-color: var(--accent); color: #00897b; font-weight: bold; }
+
+        /* Forms */
+        .input-group-custom { margin-bottom: 15px; }
+        .input-group-custom label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #666; }
+        .input-group-custom input { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; transition: 0.3s; }
+        .input-group-custom input:focus { border-color: var(--primary); }
+
+        #loadingOverlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #toast { position: fixed; bottom: 90px; left: 20px; background: #333; color: white; padding: 12px 25px; border-radius: 12px; display: none; z-index: 3000; }
+        
+        /* ميزة النسخ */
+        .btn-copy { color: var(--accent); cursor: pointer; transition: 0.2s; }
+        .btn-copy:hover { transform: scale(1.2); }
+
+        /* تحسينات إضافية */
+        @keyframes placeholder-glow { 50% { opacity: 0.5; } }
+        .skeleton { height: 20px; background-color: #e2e5e7; border-radius: 4px; animation: placeholder-glow 2s infinite; width: 100%; display: block; }
+        .btn { transition: all 0.2s ease-in-out; }
+        .btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-3 fw-bold">جاري المزامنة مع السحابة...</p>
+</div>
+
+<div id="toast"></div>
+
+<button id="backToTop" onclick="window.scrollTo(0,0)" style="position: fixed; bottom: 90px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; display: none; z-index: 2500; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<div class="bottom-nav d-md-none">
+    <div class="nav-item-mobile active" id="m-btn-stats" onclick="showSection('stats')"><i class="bi bi-speedometer2"></i><span>الرئيسية</span></div>
+    <div class="nav-item-mobile" id="m-btn-students" onclick="showSection('students')"><i class="bi bi-person-plus"></i><span>التسجيل</span></div>
+    <div class="nav-item-mobile" id="m-btn-questions" onclick="showSection('questions')"><i class="bi bi-patch-question"></i><span>الأسئلة</span></div>
+    <div class="nav-item-mobile" id="m-btn-answers" onclick="showSection('answers')"><i class="bi bi-journal-check"></i><span>الإجابات</span></div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 sidebar p-0">
+            <div class="p-4 text-center border-bottom border-secondary mb-3">
+                <h5 class="fw-bold text-white m-0">مؤسسة كن أنت</h5>
+                <small class="text-white-50">نظام الإدارة المتكامل</small>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link active" id="btn-stats" onclick="showSection('stats')"><i class="bi bi-graph-up-arrow me-2"></i> لوحة الإحصائيات</a></li>
+                <li class="nav-item"><a class="nav-link" id="btn-students" onclick="showSection('students')"><i class="bi bi-person-plus me-2"></i> تسجيل الطلاب</a></li>
+                <li class="nav-item"><a class="nav-link" id="btn-questions" onclick="showSection('questions')"><i class="bi bi-database-fill me-2"></i> بنك الأسئلة</a></li>
+                <li class="nav-item"><a class="nav-link" id="btn-answers" onclick="showSection('answers')"><i class="bi bi-journal-check me-2"></i> الإجابات</a></li>
+            </ul>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+            
+            <div id="section-stats">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold">الإحصائيات المباشرة</h3>
+                    <button class="btn btn-outline-primary rounded-pill btn-sm" onclick="fetchStats()">تحديث البيانات</button>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-4">
+                        <div class="card-custom text-center border-top border-primary border-5">
+                            <small class="text-muted d-block mb-1">إجمالي الطلاب</small>
+                            <h2 id="totalStudents" class="fw-bold m-0 text-primary">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="card-custom text-center border-top border-success border-5">
+                            <small class="text-muted d-block mb-1">نسبة النجاح</small>
+                            <h2 id="passRate" class="fw-bold m-0 text-success">0%</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-custom">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-2"></i>توزيع التقديرات</h5>
+                    <canvas id="mainChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div id="section-students" class="hidden">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="card-custom shadow-sm">
+                            <h3 id="studentFormTitle" class="text-center mb-4 fw-bold">تسجيل طالب جديد</h3>
+                            <div id="savedNotice" class="alert alert-info py-2" style="display:none;">👋 مسجل مسبقاً: <strong id="oldId"></strong></div>
+                            
+                            <input type="hidden" id="editStudentId">
+
+                            <div class="input-group-custom">
+                                <label>Full Name (English Only)</label>
+                                <input id="nameEn" type="text" placeholder="Ahmed Ali" style="direction: ltr;">
+                            </div>
+                            <div class="input-group-custom">
+                                <label>الاسم بالكامل (بالعربي)</label>
+                                <input id="nameAr" type="text" placeholder="أحمد علي">
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6"><div class="input-group-custom"><label>العمر</label><input id="age" type="number"></div></div>
+                                <div class="col-6"><div class="input-group-custom"><label>البلد</label><input id="country" type="text"></div></div>
+                            </div>
+                            <div class="input-group-custom"><label>رقم الهاتف</label><input id="phone" type="tel"></div>
+                            <div class="input-group-custom"><label>البريد الإلكتروني</label><input id="email" type="email"></div>
+
+                            <button id="regBtn" class="btn btn-primary w-100 py-3 fw-bold rounded-4 shadow" onclick="register()">إرسال البيانات</button>
+                            <button id="cancelEditBtn" class="btn btn-light w-100 py-2 mt-2 fw-bold rounded-4 d-none" onclick="cancelStudentEdit()">إلغاء التعديل</button>
+                            <div id="regResult" class="mt-3 text-center"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card-custom">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="fw-bold m-0">قائمة الطلاب المسجلين</h4>
+                                <button class="btn btn-outline-success btn-sm rounded-pill" onclick="loadStudentsList()">تحديث القائمة</button>
+                            </div>
+                            <div class="table-responsive" style="max-height: 500px;">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>المعرف</th>
+                                            <th>الاسم</th>
+                                            <th>إجراءات</th>
+                                            <th>نسخ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentsListData">
+                                        <tr><td colspan="4" class="text-center">اضغط تحديث لجلب البيانات</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-questions" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold">إدارة بنك الأسئلة</h3>
+                    <button class="btn btn-primary rounded-pill" onclick="openModal()">+ إضافة سؤال</button>
+                </div>
+                <div class="search-area mb-4">
+                    <input type="text" id="searchInput" class="form-control form-control-lg rounded-pill shadow-sm" oninput="filterData()" placeholder="🔍 ابحث عن سؤال معين...">
+                </div>
+                <div id="cardsContainer" class="row g-3"></div>
+            </div>
+
+            <div id="section-answers" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold">عرض الإجابات (تحكم كامل)</h3>
+                    <button class="btn btn-outline-success btn-sm rounded-pill" onclick="loadAnswersList()">تحديث القائمة</button>
+                </div>
+                <div class="card-custom">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" style="min-width: 1400px; font-size: 13px;">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>معرف الطالب</th>
+                                    <th>اسم الطالب</th>
+                                    <th>الدرجة المستحقة</th>
+                                    <th>النسبة</th>
+                                    <th>التفاصيل</th>
+                                    <th>التاريخ</th>
+                                    <th>الرقم التسلسلي</th>
+                                    <th>رابط الشهادة</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="answersListData">
+                                <tr><td colspan="10" class="text-center">لا يوجد بيانات حالياً</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<div class="modal shadow" id="ansModal" tabindex="-1" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); display: none; position: fixed; inset: 0; z-index: 3000;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-3">
+            <h4 class="fw-bold mb-4">تعديل سجل الإجابة</h4>
+            <input type="hidden" id="ansEditSerial">
+            <div class="input-group-custom"><label>الدرجة المستحقة</label><input id="ansEditGrade" type="text"></div>
+            <div class="input-group-custom"><label>النسبة</label><input id="ansEditPercent" type="text"></div>
+            <div class="input-group-custom"><label>الحالة (ناجح/راسب)</label><input id="ansEditStatus" type="text"></div>
+            <div class="input-group-custom"><label>رابط الشهادة</label><input id="ansEditCert" type="text"></div>
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-primary flex-grow-1 py-2 fw-bold" onclick="saveAnswerUpdate()">حفظ التعديلات</button>
+                <button class="btn btn-light px-4" onclick="closeAnsModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal shadow" id="qModal" tabindex="-1" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); display: none; position: fixed; inset: 0; z-index: 3000;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-3">
+            <h4 class="fw-bold mb-4">تحرير بيانات السؤال</h4>
+            <input type="hidden" id="rowIdx">
+            <div class="input-group-custom"><label>نص السؤال</label><input id="question" type="text" class="form-control"></div>
+            <div class="row g-2 mb-3">
+                <div class="col-4"><input id="optionA" class="form-control" placeholder="خيار A"></div>
+                <div class="col-4"><input id="optionB" class="form-control" placeholder="خيار B"></div>
+                <div class="col-4"><input id="optionC" class="form-control" placeholder="خيار C"></div>
+            </div>
+            <div class="mb-3">
+                <label class="fw-bold small d-block mb-2">الإجابة الصحيحة</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" name="correct" id="cA" value="A" class="btn-check"><label class="btn btn-outline-primary" for="cA">A</label>
+                    <input type="radio" name="correct" id="cB" value="B" class="btn-check"><label class="btn btn-outline-primary" for="cB">B</label>
+                    <input type="radio" name="correct" id="cC" value="C" class="btn-check"><label class="btn btn-outline-primary" for="cC">C</label>
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-6"><label class="small fw-bold">الزمن (ثانية)</label><input id="time" type="number" class="form-control"></div>
+                <div class="col-6"><label class="small fw-bold">الدرجة</label><input id="grade" type="number" class="form-control"></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-primary flex-grow-1 py-2 fw-bold" onclick="handleSave()">حفظ التغييرات</button>
+                <button class="btn btn-light px-4" onclick="closeModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf0vrFI730nIdGAuMnv58lF8poVD7LO0MZc9zguLEHHpQmUSV-FAIWIOT2d_2mK4Y/exec";
+    let questionsList = [];
+    let studentsRawData = [];
+    let answersRawData = [];
+    let myChart = null;
+
+    window.onscroll = function() {
+        let btn = document.getElementById("backToTop");
+        if(btn) btn.style.display = (window.scrollY > 300) ? "block" : "none";
+    };
+
+    function showSection(id) {
+        document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('section-' + id).classList.remove('hidden');
+        document.querySelectorAll('.nav-link, .nav-item-mobile').forEach(n => n.classList.remove('active'));
+        document.getElementById('btn-'+id)?.classList.add('active');
+        document.getElementById('m-btn-'+id)?.classList.add('active');
+        if(id === 'questions' && questionsList.length === 0) loadQuestions();
+        if(id === 'students') loadStudentsList();
+        if(id === 'answers') loadAnswersList();
+    }
+
+    function showOverlay(s) { document.getElementById('loadingOverlay').classList.toggle('hidden', !s); }
+    function notify(m) {
+        const t = document.getElementById('toast'); t.innerText = m;
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    async function fetchStats() {
+        showOverlay(true);
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getStats`);
+            const json = await res.json();
+            if(json.status === "SUCCESS") {
+                document.getElementById('totalStudents').innerText = json.data.totalStudents;
+                let rawRate = parseFloat(json.data.passRate);
+                document.getElementById('passRate').innerText = (rawRate < 1 ? (rawRate * 100).toFixed(1) : rawRate) + "%";
+                renderChart(json.data.gradeDistribution);
+            }
+        } catch(e) { notify("خطأ في البيانات"); }
+        finally { showOverlay(false); }
+    }
+
+    function renderChart(dist) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: Object.keys(dist), datasets: [{ label: 'الطلاب', data: Object.values(dist), backgroundColor: '#003366' }] }
+        });
+    }
+
+    async function register() {
+        const btn = document.getElementById("regBtn");
+        const editId = document.getElementById("editStudentId").value;
+        const payload = {
+            name: document.getElementById("nameEn").value.trim(), 
+            arabicName: document.getElementById("nameAr").value.trim(),
+            age: document.getElementById("age").value,
+            country: document.getElementById("country").value,
+            phone: document.getElementById("phone").value,
+            email: document.getElementById("email").value.trim()
+        };
+        btn.disabled = true;
+        try {
+            if(editId) {
+                const cols = { nameEn: 2, age: 3, country: 4, phone: 5, email: 6, nameAr: 7 };
+                for (let key in cols) {
+                    let val = document.getElementById(key === 'nameEn' ? 'nameEn' : key === 'nameAr' ? 'nameAr' : key).value;
+                    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "manageData", subAction: "updateRow", sheetName: "داتا الطلاب", id: editId, column: cols[key], newValue: val }) });
+                }
+                notify("تم التعديل ✅"); cancelStudentEdit();
+            } else {
+                const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(data.status === "SUCCESS") notify("تم التسجيل ✅");
+            }
+            loadStudentsList();
+        } finally { btn.disabled = false; }
+    }
+
+    async function loadStudentsList() {
+        const container = document.getElementById('studentsListData');
+        container.innerHTML = Array(5).fill(0).map(() => `<tr><td><div class="skeleton"></div></td><td><div class="skeleton"></div></td><td><div class="skeleton"></div></td><td><div class="skeleton"></div></td></tr>`).join('');
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=manageData&subAction=readAll&sheetName=داتا الطلاب`);
+            const json = await res.json();
+            if(json.status === "SUCCESS") { studentsRawData = json.data; renderStudentsTable(json.data); }
+        } catch(e) { container.innerHTML = '<tr><td colspan="4" class="text-center text-danger">خطأ في الجلب</td></tr>'; }
+    }
+
+    function renderStudentsTable(data) {
+        const container = document.getElementById('studentsListData');
+        if(!data || data.length <= 1) { container.innerHTML = '<tr><td colspan="4">لا يوجد بيانات</td></tr>'; return; }
+        const rows = data.slice(1);
+        container.innerHTML = rows.map((r, i) => `
+            <tr>
+                <td><small class="fw-bold">${r[0]}</small></td>
+                <td>${r[6] || r[1]}</td>
+                <td>
+                    <button class="btn btn-sm btn-light text-primary" onclick="editStudentInfo(${i+1})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-light text-danger" onclick="deleteStudent('${r[0]}')"><i class="bi bi-trash"></i></button>
+                </td>
+                <td><i class="bi bi-clipboard-plus btn-copy" onclick="copyId('${r[0]}')"></i></td>
+            </tr>
+        `).join('');
+    }
+
+    function copyId(id) {
+        navigator.clipboard.writeText(id).then(() => notify("تم نسخ المعرف: " + id));
+    }
+
+    function editStudentInfo(idx) {
+        const s = studentsRawData[idx];
+        document.getElementById("editStudentId").value = s[0];
+        document.getElementById("nameEn").value = s[1];
+        document.getElementById("age").value = s[2];
+        document.getElementById("country").value = s[3];
+        document.getElementById("phone").value = s[4];
+        document.getElementById("email").value = s[5];
+        document.getElementById("nameAr").value = s[6];
+        document.getElementById("studentFormTitle").innerText = "تعديل طالب";
+        document.getElementById("cancelEditBtn").classList.remove("d-none");
+        window.scrollTo(0,0);
+    }
+
+    function cancelStudentEdit() {
+        document.getElementById("editStudentId").value = "";
+        document.getElementById("studentFormTitle").innerText = "تسجيل طالب جديد";
+        document.getElementById("cancelEditBtn").classList.add("d-none");
+        ["nameEn","nameAr","age","country","phone","email"].forEach(id => document.getElementById(id).value = "");
+    }
+
+    async function deleteStudent(id) {
+        if(!confirm("حذف الطالب؟")) return;
+        showOverlay(true);
+        try {
+            await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "manageData", subAction: "deleteRow", sheetName: "داتا الطلاب", id: id }) });
+            loadStudentsList();
+        } finally { showOverlay(false); }
+    }
+
+    async function loadAnswersList() {
+        const container = document.getElementById('answersListData');
+        container.innerHTML = Array(5).fill(0).map(() => `<tr><td colspan="10"><div class="skeleton"></div></td></tr>`).join('');
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=manageData&subAction=readAll&sheetName=الاجابات`);
+            const json = await res.json();
+            if(json.status === "SUCCESS") { answersRawData = json.data; renderAnswersTable(json.data); }
+        } catch(e) { container.innerHTML = '<tr><td colspan="10" class="text-center">خطأ</td></tr>'; }
+    }
+
+    function renderAnswersTable(data) {
+        const container = document.getElementById('answersListData');
+        if(!data || data.length <= 1) { container.innerHTML = '<tr><td colspan="10">لا يوجد بيانات</td></tr>'; return; }
+        const rows = data.slice(1);
+        container.innerHTML = rows.map((r, i) => {
+            // --- التعديل الجذري هنا ---
+            let rawStatus = r[8] ? String(r[8]).trim() : "";
+            let pVal = parseFloat(r[3]);
+            
+            // شرط ذكي: إذا الكلمة فيها حرف (ن و ج) أو إذا كانت النسبة أكبر من أو تساوي 50% أو 0.5
+            let isPassed = rawStatus.includes("ناجح") || rawStatus.includes("Pass") || pVal >= 50 || (pVal >= 0.5 && pVal < 1);
+            
+            let statusBadge = isPassed 
+                ? `<span class="badge rounded-pill bg-success-subtle text-success border border-success">ناجح</span>` 
+                : `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger">راسب</span>`;
+            
+            let displayPercent = pVal < 1 ? Math.round(pVal * 100) : pVal;
+            let progressWidth = pVal < 1 ? pVal * 100 : pVal;
+
+            return `
+                <tr>
+                    <td><span class="badge bg-light text-dark border">${r[0]}</span></td>
+                    <td class="fw-bold">${r[1]}</td>
+                    <td><span class="text-primary fw-bold">${r[2]}</span></td>
+                    <td>
+                        <div class="progress" style="height: 6px; width: 50px; display: inline-flex;"><div class="progress-bar bg-success" style="width: ${progressWidth}%"></div></div>
+                        <small class="ms-1">${displayPercent}%</small>
+                    </td>
+                    <td><button class="btn btn-sm btn-link p-0" onclick="alert('${r[4]}')">عرض</button></td>
+                    <td><small class="text-muted">${r[5]}</small></td>
+                    <td><code class="text-dark">${r[6]}</code></td>
+                    <td><a href="${r[7]}" target="_blank" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-box-arrow-up-right"></i></a></td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-white border text-primary" onclick="openAnsEdit(${i+1})"><i class="bi bi-pencil-square"></i></button>
+                            <button class="btn btn-sm btn-white border text-danger" onclick="deleteAnswer('${r[6]}')"><i class="bi bi-trash3"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function openAnsEdit(idx) {
+        const r = answersRawData[idx];
+        document.getElementById('ansEditSerial').value = r[6];
+        document.getElementById('ansEditGrade').value = r[2];
+        document.getElementById('ansEditPercent').value = r[3];
+        document.getElementById('ansEditCert').value = r[7];
+        document.getElementById('ansEditStatus').value = r[8];
+        document.getElementById('ansModal').style.display = 'block';
+    }
+
+    function closeAnsModal() { document.getElementById('ansModal').style.display = 'none'; }
+
+    async function saveAnswerUpdate() {
+        const serial = document.getElementById('ansEditSerial').value;
+        showOverlay(true);
+        try {
+            const updates = [
+                { col: 3, val: document.getElementById('ansEditGrade').value },
+                { col: 4, val: document.getElementById('ansEditPercent').value },
+                { col: 8, val: document.getElementById('ansEditCert').value },
+                { col: 9, val: document.getElementById('ansEditStatus').value }
+            ];
+            for (let up of updates) {
+                await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "manageData", subAction: "updateRow", sheetName: "الاجابات", id: serial, column: up.col, newValue: up.val }) });
+            }
+            notify("تم التعديل ✅"); closeAnsModal(); loadAnswersList();
+        } finally { showOverlay(false); }
+    }
+
+    async function deleteAnswer(serial) {
+        if(!confirm("حذف الإجابة؟")) return;
+        showOverlay(true);
+        try {
+            await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "manageData", subAction: "deleteRow", sheetName: "الاجابات", id: serial }) });
+            loadAnswersList();
+        } finally { showOverlay(false); }
+    }
+
+    async function loadQuestions() {
+        showOverlay(true);
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getQuestions`);
+            const json = await res.json();
+            questionsList = json || [];
+            renderQuestions(questionsList);
+        } finally { showOverlay(false); }
+    }
+
+    function renderQuestions(data) {
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = data.map((q, i) => `
+            <div class="col-md-4"><div class="q-card">
+                <h6 class="fw-bold">${q.question}</h6>
+                <div class="opt ${q.correct === 'A' ? 'correct' : ''}">أ) ${q.optionA}</div>
+                <div class="opt ${q.correct === 'B' ? 'correct' : ''}">ب) ${q.optionB}</div>
+                <div class="opt ${q.correct === 'C' ? 'correct' : ''}">ج) ${q.optionC}</div>
+                <div class="mt-auto pt-2 border-top d-flex justify-content-end gap-2">
+                    <button class="btn btn-sm btn-light text-primary" onclick="editQ(${i})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-light text-danger" onclick="deleteQ(${i})"><i class="bi bi-trash"></i></button>
+                </div>
+            </div></div>
+        `).join('');
+    }
+
+    function editQ(i) {
+        const q = questionsList[i];
+        document.getElementById('rowIdx').value = i;
+        document.getElementById('question').value = q.question;
+        document.getElementById('optionA').value = q.optionA;
+        document.getElementById('optionB').value = q.optionB;
+        document.getElementById('optionC').value = q.optionC;
+        document.getElementById('time').value = q.time;
+        document.getElementById('grade').value = q.grade;
+        document.getElementById('qModal').style.display = 'block';
+    }
+
+    async function handleSave() {
+        const idx = document.getElementById('rowIdx').value;
+        const payload = {
+            action: idx === "" ? "add" : "update",
+            rowIdx: idx !== "" ? parseInt(idx) : null,
+            question: document.getElementById('question').value,
+            optionA: document.getElementById('optionA').value,
+            optionB: document.getElementById('optionB').value,
+            optionC: document.getElementById('optionC').value,
+            correct: document.querySelector('input[name="correct"]:checked')?.value,
+            time: document.getElementById('time').value,
+            grade: document.getElementById('grade').value
+        };
+        showOverlay(true);
+        try {
+            await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+            closeModal(); loadQuestions();
+        } finally { showOverlay(false); }
+    }
+
+    async function deleteQ(idx) {
+        if(!confirm("حذف السؤال؟")) return;
+        showOverlay(true);
+        try {
+            await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "delete", rowIdx: idx }) });
+            loadQuestions();
+        } finally { showOverlay(false); }
+    }
+
+    function openModal() { document.getElementById('rowIdx').value = ""; document.getElementById('qModal').style.display = 'block'; }
+    function closeModal() { document.getElementById('qModal').style.display = 'none'; }
+    function filterData() {
+        const v = document.getElementById('searchInput').value.toLowerCase();
+        renderQuestions(questionsList.filter(q => q.question.toLowerCase().includes(v)));
+    }
+
+    window.onload = () => fetchStats();
+</script>
+</body>
+</html>
+
+
+
+
