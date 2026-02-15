@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام تسجيل الطلاب الاحترافي</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root {
+  --primary: #003366; --primary-hover: #004a94;
+  --accent: #2ecc71; --bg: #f0f2f5; --error: #e74c3c;
+  --success: #27ae60;
+}
+body {
+  margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg);
+  padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh;
+}
+.container {
+  width: 100%; max-width: 480px; background: #fff; padding: 30px;
+  border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border-top: 10px solid var(--primary); position: relative; overflow: hidden;
+}
+
+/* شريط التقدم */
+.progress-container { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: #eee; }
+#progressBar { width: 0%; height: 100%; background: var(--accent); transition: 0.4s; }
+
+h2 { text-align: center; color: var(--primary); margin-bottom: 25px; }
+
+/* بطاقة البيانات الشخصية للمسجلين مسبقاً */
+.profile-card {
+  background: #fff; border: 2px solid #eef2f7; border-radius: 15px; padding: 20px;
+  margin-bottom: 20px; display: none; animation: slideDown 0.5s ease;
+}
+.profile-card h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.info-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 14px; }
+.info-label { color: #888; }
+.info-value { font-weight: bold; color: #333; }
+
+.welcome-back {
+  background: #eef2f7; padding: 15px; border-radius: 10px;
+  margin-bottom: 20px; font-size: 14px; color: var(--primary);
+  border-right: 4px solid var(--primary); display: none; position: relative;
+}
+.close-notice { position: absolute; left: 10px; top: 10px; cursor: pointer; font-weight: bold; }
+
+.input-group { margin-bottom: 18px; position: relative; transition: 0.3s; }
+.input-group.hidden { display: none; }
+
+label { display: block; margin-bottom: 6px; font-size: 13px; color: #555; font-weight: bold; }
+input, select {
+  width: 100%; padding: 12px 15px; border-radius: 10px; border: 2px solid #eee;
+  font-size: 15px; font-family: 'Tajawal', sans-serif; box-sizing: border-box; transition: 0.3s;
+}
+input:focus, select:focus { outline: none; border-color: var(--primary); background: #fff; }
+input.valid { border-color: var(--success) !important; }
+input.invalid { border-color: var(--error) !important; }
+
+.error-hint { color: var(--error); font-size: 11px; margin-top: 4px; display: none; }
+
+button {
+  width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--primary);
+  color: #fff; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px;
+  display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s;
+}
+button:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-2px); }
+button:disabled { background: #ccc; cursor: not-allowed; }
+
+/* اهتزاز الزر عند الخطأ */
+@keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+.shake { animation: shake 0.3s ease-in-out 2; }
+
+.id-box {
+  margin-top: 15px; padding: 20px; background: #f0fff4;
+  border: 2px dashed var(--accent); border-radius: 15px; text-align: center;
+}
+
+@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.skeleton { opacity: 0.5; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+  <div class="progress-container"><div id="progressBar"></div></div>
+  
+  <h2 id="formTitle">نموذج تسجيل الطلاب</h2>
+
+  <div id="savedNotice" class="welcome-back">
+    <span class="close-notice" onclick="this.parentElement.style.display='none'">✕</span>
+    👋 مرحباً بك مجدداً! بياناتك مسجلة لدينا.
+  </div>
+
+  <div id="studentProfile" class="profile-card">
+    <div id="captureArea">
+      <h3>بطاقة الطالب</h3>
+      <div class="info-row"><span class="info-label">الاسم:</span> <span class="info-value" id="pName"></span></div>
+      <div class="info-row"><span class="info-label">البلد:</span> <span class="info-value" id="pCountry"></span></div>
+      <div class="info-row"><span class="info-label">رقم الهاتف:</span> <span class="info-value" id="pPhone"></span></div>
+      <div class="info-row"><span class="info-label">المعرف:</span> <span class="info-value" style="color:var(--primary)" id="pId"></span></div>
+    </div>
+    <button class="copy-btn" style="background:#fff; color:var(--primary); border:1px solid #ccc; font-size:13px; padding:8px;" onclick="copyId(localStorage.getItem('studentId'))">📋 نسخ المعرف</button>
+    <button onclick="downloadCard()" style="background:var(--accent); font-size:13px; padding:8px;">📸 حفظ كصورة</button>
+  </div>
+
+  <div id="registrationForm">
+    <div class="input-group">
+      <label>الاسم بالكامل (بالعربي)</label>
+      <input id="nameAr" type="text" placeholder="مثال: أحمد علي" onblur="validateField(this)">
+      <div id="hintAr" class="error-hint">⚠️ يرجى استخدام الحروف العربية فقط</div>
+    </div>
+
+    <div class="input-group hidden" id="groupEn">
+      <label>Full Name (English) - ترجمة تلقائية</label>
+      <input id="nameEn" type="text" placeholder="Example: Ahmed Ali" style="direction: ltr;" autocapitalize="words" onblur="validateField(this)">
+      <div id="hintEn" class="error-hint">⚠️ English letters only</div>
+    </div>
+
+    <div class="input-group">
+      <label>العمر</label>
+      <input id="age" type="number" min="5" max="100" placeholder="من 5 إلى 100" onblur="validateField(this)">
+    </div>
+
+    <div class="input-group">
+      <label>البلد</label>
+      <select id="country" onchange="validateField(this)">
+        <option value="">اختر البلد...</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>رقم الهاتف</label>
+      <input id="phone" type="tel" inputmode="tel" placeholder="05xxxxxxxx" onblur="validateField(this)">
+    </div>
+
+    <div class="input-group">
+      <label>البريد الإلكتروني</label>
+      <input id="email" type="email" placeholder="mail@example.com" onblur="validateField(this)">
+    </div>
+
+    <button id="btn" onclick="register()">
+      <span id="btnText">إرسال البيانات</span>
+      <div id="spinner" class="spinner" style="display:none; width:18px; height:18px; border:3px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 0.8s linear infinite;"></div>
+    </button>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoeNXcnVcEiPwXHrwjaIGSo1Xxk4_b23y10LiuIhPqsz7L1lpR4CSZ_IsgiEQpxb29/exec";
+
+const ARAB_COUNTRIES = ["مصر", "السعودية", "الإمارات", "الكويت", "قطر", "البحرين", "عمان", "الأردن", "لبنان", "فلسطين", "سوريا", "العراق", "اليمن", "ليبيا", "تونس", "الجزائر", "المغرب", "السودان", "موريتانيا", "الصومال", "جيبوتي", "جزر القمر"];
+
+// تعبئة قائمة الدول
+const countrySelect = document.getElementById("country");
+ARAB_COUNTRIES.forEach(c => {
+  let opt = document.createElement("option");
+  opt.value = c; opt.innerText = c;
+  countrySelect.appendChild(opt);
+});
+
+// مراقبة كتابة الاسم العربي لإظهار الإنجليزي وترجمته
+// مراقبة كتابة الاسم العربي لحظة بلحظة
+document.getElementById("nameAr").addEventListener("input", function() {
+  const val = this.value;
+  const groupEn = document.getElementById("groupEn");
+  const nameEnInput = document.getElementById("nameEn");
+
+  // تنظيف الحقل ليبقى عربياً فقط
+  this.value = val.replace(/[^\u0600-\u06FF\s]/g, '');
+  
+  // 1. إظهار الحقل الإنجليزي فور البدء بالكتابة (بعد أول حرفين مثلاً)
+  if (this.value.length >= 2) {
+    groupEn.style.display = "block";
+    groupEn.classList.remove("hidden");
+  } else {
+    groupEn.style.display = "none";
+  }
+
+  // 2. منطق الترجمة الفورية (محاكاة تحويل الأحرف)
+  // ملاحظة: الترجمة الحقيقية الدقيقة تتطلب Google Translate API 
+  // سنقوم هنا بتحفيز الحقل ليكون جاهزاً أو استخدام مكتبة بسيطة
+  if (this.value.length > 3) {
+      // هنا يمكنك إضافة جلب ترجمة إذا توفر لديك مفتاح API
+      // حالياً سيترك الحقل للمستخدم ليملأه مع تنبيه بصري
+      nameEnInput.placeholder = "جاري بانتظار الكتابة بالإنجليزية...";
+  }
+  
+  updateProgress();
+});
+
+
+document.getElementById("nameEn").addEventListener("input", function() {
+  this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+});
+
+// التحقق الفوري
+function validateField(el) {
+  let isValid = false;
+  if (el.id === "email") {
+    isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value);
+  } else if (el.id === "phone") {
+    isValid = /^[0-9+]{8,15}$/.test(el.value);
+  } else {
+    isValid = el.value.trim().length > 0;
+  }
+
+  if (isValid) {
+    el.classList.add("valid");
+    el.classList.remove("invalid");
+  } else {
+    el.classList.remove("valid");
+    el.classList.add("invalid");
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const inputs = Array.from(document.querySelectorAll("#registrationForm input, #registrationForm select"));
+  const validInputs = inputs.filter(i => i.classList.contains("valid")).length;
+  const total = inputs.filter(i => !i.parentElement.classList.contains("hidden")).length;
+  document.getElementById("progressBar").style.width = (validInputs / total * 100) + "%";
+}
+
+window.addEventListener('DOMContentLoaded', checkExistingRegistration);
+
+function checkExistingRegistration() {
+  const savedId = localStorage.getItem("studentId");
+  if (savedId) {
+    document.getElementById("savedNotice").style.display = "block";
+    document.getElementById("registrationForm").style.display = "none";
+    document.getElementById("studentProfile").style.display = "block";
+    document.getElementById("formTitle").innerText = "بياناتك المسجلة";
+    
+    // عرض البيانات من التخزين المحلي
+    document.getElementById("pName").innerText = localStorage.getItem("studentName") || "---";
+    document.getElementById("pCountry").innerText = localStorage.getItem("studentCountry") || "---";
+    document.getElementById("pPhone").innerText = localStorage.getItem("studentPhone") || "---";
+    document.getElementById("pId").innerText = savedId;
+
+    document.getElementById("result").innerHTML = `
+      
+    `;
+  }
+}
+
+function enableNewRegistration() {
+  // ملاحظة: لا نحذف ID الطالب القديم من localStorage تماماً إذا أردنا الاحتفاظ بذاكرة، 
+  // لكننا سنصفر الحقول للسماح بتسجيل جديد
+  document.getElementById("registrationForm").style.display = "block";
+  document.getElementById("studentProfile").style.display = "none";
+  document.getElementById("formTitle").innerText = "نموذج تسجيل الطلاب";
+  document.getElementById("registrationForm").classList.remove("skeleton");
+  document.getElementById("progressBar").style.width = "0%";
+  
+  document.querySelectorAll('input').forEach(i => {
+    i.value = ""; i.classList.remove("valid", "invalid");
+  });
+  document.getElementById("country").value = "";
+}
+
+async function register() {
+  const btn = document.getElementById("btn");
+  const form = document.getElementById("registrationForm");
+  const payload = {
+    name: document.getElementById("nameEn").value.trim(),
+    arabicName: document.getElementById("nameAr").value.trim(),
+    age: parseInt(document.getElementById("age").value),
+    country: document.getElementById("country").value,
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim()
+  };
+
+  if (!payload.arabicName || !payload.age || !payload.country || !payload.phone) {
+    btn.classList.add("shake");
+    setTimeout(() => btn.classList.remove("shake"), 600);
+    alert("يرجى إكمال جميع البيانات المطلوبة بشكل صحيح");
+    return;
+  }
+
+  form.classList.add("skeleton");
+  btn.disabled = true;
+  document.getElementById("btnText").innerText = "جاري الحفظ...";
+  document.getElementById("spinner").style.display = "block";
+
+  try {
+    const response = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (data.status === "SUCCESS") {
+      // حفظ البيانات محلياً للبروفايل
+      localStorage.setItem("studentId", data.studentId);
+      localStorage.setItem("studentName", payload.arabicName);
+      localStorage.setItem("studentCountry", payload.country);
+      localStorage.setItem("studentPhone", payload.phone);
+      
+      location.reload(); // إعادة التحميل لعرض البطاقة
+    }
+  } catch (e) {
+    alert("خطأ في الاتصال بالسيرفر");
+    form.classList.remove("skeleton");
+    btn.disabled = false;
+    document.getElementById("btnText").innerText = "إرسال البيانات";
+  } finally {
+    document.getElementById("spinner").style.display = "none";
+  }
+}
+
+function copyId(id) {
+  navigator.clipboard.writeText(id).then(() => alert("تم نسخ المعرف: " + id));
+}
+
+function downloadCard() {
+  const area = document.getElementById("captureArea");
+  html2canvas(area).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'student-card.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+
+
+let typingTimer;
+const doneTypingInterval = 500; // الانتظار لنصف ثانية بعد توقف الكتابة للترجمة
+
+document.getElementById("nameAr").addEventListener("input", function() {
+  const val = this.value;
+  const groupEn = document.getElementById("groupEn");
+  
+  this.value = val.replace(/[^\u0600-\u06FF\s]/g, ''); // منع الإنجليزي في حقل العربي
+
+  if (this.value.length >= 3) {
+    groupEn.classList.remove("hidden");
+    groupEn.style.display = "block";
+    
+    // بدء مؤقت الترجمة
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(async () => {
+      if (this.value) {
+        // محاولة جلب ترجمة بسيطة عبر API مجاني (مثل MyMemory)
+        try {
+          const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(this.value)}&langpair=ar|en`);
+          const data = await res.json();
+          if(data.responseData.translatedText) {
+            document.getElementById("nameEn").value = data.responseData.translatedText;
+            document.getElementById("nameEn").classList.add("valid");
+          }
+        } catch (e) { console.log("Translation error"); }
+      }
+    }, doneTypingInterval);
+  }
+});
+
+</script>
+
+</body>
+</html>
