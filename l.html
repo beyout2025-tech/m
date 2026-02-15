@@ -264,17 +264,21 @@ function enableNewRegistration() {
   document.getElementById("country").value = "";
 }
 
+
+
+
 async function register() {
   const btn = document.getElementById("btn");
   const form = document.getElementById("registrationForm");
-  const payload = {
+    const payload = {
     name: document.getElementById("nameEn").value.trim(),
-    arabicName: document.getElementById("nameAr").value.trim(),
     age: parseInt(document.getElementById("age").value),
     country: document.getElementById("country").value,
     phone: document.getElementById("phone").value.trim(),
-    email: document.getElementById("email").value.trim()
+    email: document.getElementById("email").value.trim(),
+    arabicName: document.getElementById("nameAr").value.trim() 
   };
+
 
   if (!payload.arabicName || !payload.age || !payload.country || !payload.phone) {
     btn.classList.add("shake");
@@ -303,8 +307,11 @@ async function register() {
       localStorage.setItem("studentName", payload.arabicName);
       localStorage.setItem("studentCountry", payload.country);
       localStorage.setItem("studentPhone", payload.phone);
+      localStorage.setItem("studentEmail", payload.email); 
+
+
+     window.location.href = "index.html";
       
-      location.reload(); // إعادة التحميل لعرض البطاقة
     }
   } catch (e) {
     alert("خطأ في الاتصال بالسيرفر");
